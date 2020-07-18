@@ -39,6 +39,7 @@ def main(f_name):
     for counter, poi in enumerate(pois, 1):
 
         print()
+        print(f'Примерно времени осталось: {((datetime.now() - START) / counter) * (len(pois) - counter)}')
 
         try:
             data = parse(poi, 5).json()
@@ -70,14 +71,13 @@ def main(f_name):
 
 
 if __name__ == '__main__':
-    START = datetime.now()
     REQUESTS_NUM = 0
     LINK = 'https://pkk.rosreestr.ru/api/features/{num}?text={lat}+{lon}'
 
     session = requests.Session()
 
     # proxy = 'socks5://84GAJv:APZgSw@193.31.102.18:9212/'
-    proxy = 'https://84GAJv:APZgSw@193.31.102.18:9212/'
+    # proxy = 'https://84GAJv:APZgSw@193.31.102.18:9212/'
 
     # session.proxies = {
     #     'https': proxy
@@ -95,6 +95,7 @@ if __name__ == '__main__':
     attr = argv[1] if argv[1:] else ''
 
     try:
+        START = datetime.now()
         main(attr)
     except Exception as e:
         with open('log.txt', 'a') as error_log:
