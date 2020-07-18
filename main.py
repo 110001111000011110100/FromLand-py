@@ -11,7 +11,11 @@ from funcs import parse_address, write_poi
 
 
 def parse(c, num):
+    global REQUESTS_NUM
+
     while True:
+        REQUESTS_NUM += 1
+
         try:
             resp = session.get(LINK.format(num=num, lat=c[0], lon=c[1]))
             sleep(3)
@@ -34,6 +38,8 @@ def main(f_name):
 
     for counter, poi in enumerate(pois, 1):
 
+        print()
+
         try:
             data = parse(poi, 5).json()
             print(f'POI number (UCH) - {counter} / {len(pois)}')
@@ -52,11 +58,10 @@ def main(f_name):
                     print(f'Адрес для {poi[0]}, {poi[1]} не найден (UCH)')
                     write_poi(dict(Type='0x1a00', Data0=f'({poi[0]},{poi[1]})'), f_out)
         except JSONDecodeError:
-            with open('log.html', 'w', encoding='utf-8') as file:
-                file.write(str(parse(poi, 5).content))
+            with open('log.html', 'wb') as file:
+                file.write(parse(poi, 5).content)
             with open('log.txt', 'w', encoding='utf-8') as file:
-                file.write(str(counter))
-            print(counter)
+                file.write(f'Обработано точек - {counter}')
 
             exit(1)
 
@@ -80,10 +85,20 @@ if __name__ == '__main__':
 
     session.headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 '
-                      'YaBrowser/20.7.1.68 Yowser/2.5 Safari/537.36'
+                      'YaBrowser/20.7.1.68 Yowser/2.5 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Host': 'pkk.rosreestr.ru',
+        'Referer': 'https://pkk.rosreestr.ru/'
     }
 
     attr = argv[1] if argv[1:] else ''
-    main(attr)
+
+    try:
+        main(attr)
+    except Exception as e:
+        with open('log.txt', 'a') as error_log:
+            error_log.write(str(e))
 
     print('Время выполнения:', datetime.now() - START)
+    print(f'Кол-во запросов: {REQUESTS_NUM}')

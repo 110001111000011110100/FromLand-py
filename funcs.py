@@ -42,7 +42,7 @@ def parse_address(address, data0):
                 house_num = re.sub(r'(\d+)\s*([абвгдеёжийлмнпрстуфхцчшщъыьэюя]+)',
                                    lambda pat: pat.group(1) + pat.group(2).upper(), street_and_num[1]).replace(' ', '')
                 poi = dict(Label=str(house_num), HouseNumber=str(house_num), Data0=data0,
-                           StreetDesk=str(prefix + street_and_num[0] + postfix), Type='0x1916')
+                           StreetDesc=str(prefix + street_and_num[0] + postfix), Type='0x1916')
             else:
                 poi = dict(Label=street_plus_num[1], Type='0x1a00', Data0=data0)
         else:

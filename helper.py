@@ -16,7 +16,7 @@ def main():
         func_name = input('Введите название операции или help: ')
 
         if func_name == 'help':
-            with open('README.MD', 'r') as docs:
+            with open('README.md', 'r') as docs:
                 print(docs.read())
 
         if func_name == 'split':
