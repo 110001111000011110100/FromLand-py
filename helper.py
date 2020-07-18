@@ -1,5 +1,6 @@
 from datetime import datetime
 from os import system
+from math import ceil
 
 from POI import get_cds
 from constants import header
@@ -11,8 +12,8 @@ def get_file_name():
 
 def main():
 
-    func_name = ''
-    while func_name != 'exit':
+    func_name = 'no_func'
+    while func_name != 'exit' and func_name:
         func_name = input('Введите название операции или help: ')
 
         if func_name == 'help':
@@ -22,8 +23,16 @@ def main():
         if func_name == 'split':
             file_name = get_file_name()
             data = get_cds(file_name)
-            sep_unit = int(input('Введите желаемое количество точек в файле: '))
+            sep_unit = input('Введите желаемое количество точек в файле или bp: ')
             data_f = list()
+
+            if sep_unit.isdigit():
+                sep_unit = int(sep_unit)
+            else:
+                parts = int(input('Желаемое количество файлов для разбития: '))
+                sep_unit = ceil((len(data) + 1) / parts)
+
+            print(sep_unit)
 
             for i in range(len(data) // sep_unit + 1):
                 data_f.append(list())
@@ -55,9 +64,4 @@ def main():
 
 
 if __name__ == '__main__':
-    START = datetime.now()
-
     main()
-
-    print('Время работы:', datetime.now() - START)
-    input('Нажмите Enter...')
