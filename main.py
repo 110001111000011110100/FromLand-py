@@ -4,6 +4,7 @@ from time import sleep
 from json.decoder import JSONDecodeError
 
 import requests
+from colorama import Fore, init
 
 import POI
 import constants
@@ -23,7 +24,7 @@ def parse(c, num):
         except requests.ConnectionError:
             pass
 
-        print('Обрыв соединения, повторная попытка подключения через 0.2с')
+        print(Fore.RED + 'Обрыв соединения, повторная попытка подключения через 0.2с')
         sleep(3)
 
 
@@ -39,28 +40,33 @@ def main(f_name):
     for counter, poi in enumerate(pois, 1):
 
         print()
-        print(f'Примерно времени осталось: {((datetime.now() - START) / counter) * (len(pois) - counter)}')
+        time_remaining = ((datetime.now() - START) / counter) * (len(pois) - counter)
+        print(Fore.BLUE + f'Примерно времени осталось: {time_remaining}')
+        print(Fore.BLUE + f'Время окончания: {datetime.now() + time_remaining}')
+
+        data = parse(poi, 5)
 
         try:
-            data = parse(poi, 5).json()
-            print(f'POI number (UCH) - {counter} / {len(pois)}')
+            data = data.json()
+            print(Fore.CYAN + f'POI number (UCH) - {counter} / {len(pois)}')
             try:
                 poi_data = parse_address(data['features'][0]['attrs']['address'], f'({poi[0]},{poi[1]})')
-                print(f'Адрес для {poi[0]}, {poi[1]} найден (OKS)')
+                print(Fore.CYAN + f'Адрес для {poi[0]}, {poi[1]} найден (OKS)')
                 write_poi(poi_data, f_out)
             except IndexError:
                 data = parse(poi, 1).json()
-                print(f'Адрес для {poi[0]}, {poi[1]} не найден (OKS), поиск по участку...')
+                print(Fore.CYAN + f'Адрес для {poi[0]}, {poi[1]} не найден (OKS), поиск по участку...')
                 try:
                     poi_data = parse_address(data['features'][0]['attrs']['address'], f'({poi[0]},{poi[1]})')
-                    print(f'Адрес для {poi[0]}, {poi[1]} найден (UCH)')
+                    print(Fore.CYAN + f'Адрес для {poi[0]}, {poi[1]} найден (UCH)')
                     write_poi(poi_data, f_out)
                 except IndexError:
-                    print(f'Адрес для {poi[0]}, {poi[1]} не найден (UCH)')
+                    print(Fore.CYAN + f'Адрес для {poi[0]}, {poi[1]} не найден (UCH)')
                     write_poi(dict(Type='0x1a00', Data0=f'({poi[0]},{poi[1]})'), f_out)
         except JSONDecodeError:
+            print(Fore.RED + 'JSONDecodeError')
             with open('log.html', 'wb') as file:
-                file.write(parse(poi, 5).content)
+                file.write(data.content)
             with open('log.txt', 'w', encoding='utf-8') as file:
                 file.write(f'Обработано точек - {counter}')
 
@@ -75,6 +81,8 @@ if __name__ == '__main__':
     LINK = 'https://pkk.rosreestr.ru/api/features/{num}?text={lat}+{lon}'
 
     session = requests.Session()
+
+    init(autoreset=True)
 
     # proxy = 'socks5://84GAJv:APZgSw@193.31.102.18:9212/'
     # proxy = 'https://84GAJv:APZgSw@193.31.102.18:9212/'
@@ -94,12 +102,14 @@ if __name__ == '__main__':
 
     attr = argv[1] if argv[1:] else ''
 
+    START = datetime.now()
+
     try:
-        START = datetime.now()
         main(attr)
     except Exception as e:
+        print(Fore.RED + 'Error, check it in log.txt')
         with open('log.txt', 'a') as error_log:
             error_log.write(str(e))
 
-    print('Время выполнения:', datetime.now() - START)
-    print(f'Кол-во запросов: {REQUESTS_NUM}')
+    print(Fore.GREEN + 'Время выполнения:', datetime.now() - START)
+    print(Fore.GREEN + f'Кол-во запросов: {REQUESTS_NUM}')
